@@ -37,61 +37,61 @@ import Select from 'react-select';
  * 1) initialFormValues (Global)
  *********************************/
 const initialFormValues = {
-  // Single Student Information
-  student: {
-    studentFirstName: '',
-    studentMiddleName: '',
-    studentLastName: '',
-    gender: '',
-    studentPhone: '',
-    studentEmail: '',
-    dob: '',
-    homeAddress: '',
-    homeCity: '',
-    homeState: '',
-    homeZip: '',
-    parentFirstName: '',
-    parentLastName: '',
-    parentEmail: '',
-    parentPhone: '',
-    relationshipToStudent: '',
-    parentAddress: '',
-    parentCity: '',
-    parentState: '',
-    parentZip: '',
-    signedWaiver: '',
-    waiverConfirmed: false,
-  },
-  tryoutType: '',
-  groupType: '',
-  activityType: '',
-  selectedTrial: '',
-  customDate: '',
-  customTime: '',
-};
-
-/*******************************
- * 2) Helper Functions
- *******************************/
-const formatToE164 = (value) => {
-  const digits = value.replace(/\D/g, '');
-  if (digits.startsWith('1')) {
-    return `+${digits}`;
-  }
-  return `+1${digits}`;
-};
-
-const calculateAge = (dob) => {
-  if (!dob) return '';
-  const dobDate = new Date(dob);
-  const today = new Date();
-  let age = today.getFullYear() - dobDate.getFullYear();
-  const m = today.getMonth() - dobDate.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < dobDate.getDate())) {
-    age--;
-  }
-  return age;
-};
+    // Single Student Information
+    student: {
+      studentFirstName: '',
+      studentMiddleName: '',
+      studentLastName: '',
+      gender: '',
+      studentPhone: '',
+      studentEmail: '',
+      dob: '',
+      homeAddress: '',
+      homeCity: '',
+      homeState: '',
+      homeZip: '',
+      parentFirstName: '',
+      parentLastName: '',
+      parentEmail: '',
+      parentPhone: '',
+      relationshipToStudent: '',
+      parentAddress: '',
+      parentCity: '',
+      parentState: '',
+      parentZip: '',
+      signedWaiver: '',
+      waiverConfirmed: false,
+    },
+    tryoutType: '',
+    groupType: '',
+    activityType: '',
+    selectedTrial: '',
+    customDate: '',
+    customTime: '',
+  };
+  
+  /*******************************
+   * 2) Helper Functions
+   *******************************/
+  const formatToE164 = (value) => {
+    const digits = value.replace(/\D/g, '');
+    if (digits.startsWith('1')) {
+      return `+${digits}`;
+    }
+    return `+1${digits}`;
+  };
+  
+  const calculateAge = (dob) => {
+    if (!dob) return '';
+    const dobDate = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - dobDate.getFullYear();
+    const m = today.getMonth() - dobDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < dobDate.getDate())) {
+      age--;
+    }
+    return age;
+  };
 
 /********************************************
  * 3) Reusable Formik Input Components
@@ -339,54 +339,68 @@ const PhoneInput = React.memo(({ label, icon: Icon, ...props }) => {
 /*****************************************
  * 4) Progress Indicator (UI Decoration)
  *****************************************/
-const ProgressIndicator = React.memo(({ steps, currentStep }) => (
-  <div
-    className="flex items-center mb-8 space-x-2 sm:space-x-4 lg:space-x-6 overflow-x-auto"
-    aria-label="Progress Indicator"
-  >
-    {steps.map((step, index) => (
-      <React.Fragment key={step.id}>
-        <motion.div
-          className="flex flex-col items-center"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: index * 0.2, duration: 0.5 }}
-          title={`Step ${index + 1}: ${step.name}`}
-        >
-          <div
-            className={classNames(
-              'flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-full border-2 transition-colors duration-300 relative',
-              {
-                'bg-green-500 border-green-500 text-white': currentStep > index + 1,
-                'bg-indigo-600 border-indigo-600 text-white': currentStep === index + 1,
-                'bg-transparent border-gray-300 text-gray-500': currentStep < index + 1,
-              }
-            )}
-            aria-current={currentStep === index + 1 ? 'step' : undefined}
-            aria-label={`Step ${index + 1}: ${step.name}`}
-          >
-            {currentStep > index + 1 ? <FaCheck /> : index + 1}
-          </div>
-          <span className="mt-2 text-xs sm:text-sm lg:text-base text-gray-300 whitespace-nowrap">
-            {step.name}
-          </span>
-        </motion.div>
-        {index < steps.length - 1 && (
-          <motion.div
-            className={classNames('flex-1 h-1 transition-colors duration-300', {
-              'bg-green-500': currentStep > index + 1,
-              'bg-gray-300': currentStep <= index + 1,
-            })}
-            aria-hidden="true"
-            initial={{ width: 0 }}
-            animate={{ width: '100%' }}
-            transition={{ delay: index * 0.2, duration: 0.5 }}
-          ></motion.div>
-        )}
-      </React.Fragment>
-    ))}
-  </div>
-));
+const ProgressIndicator = React.memo(({ steps, currentStep, onStepClick }) => {
+    // Define transition settings and motion variants
+    const stepTransition = (index) => ({ delay: index * 0.2, duration: 0.5 });
+    const connectorVariants = { hidden: { width: 0 }, visible: { width: '100%' } };
+  
+    // Render individual step and connector within mapping
+    return (
+      <div className="flex items-center mb-8 space-x-4 lg:space-x-8 overflow-x-auto" aria-label="Progress Indicator">
+        {steps.map((step, index) => {
+          const stepNumber = index + 1;
+          const isCompleted = currentStep > stepNumber;
+          const isActive = currentStep === stepNumber;
+  
+          const stepClasses = classNames(
+            'flex items-center justify-center w-12 h-12 lg:w-16 lg:h-16 rounded-full border-4 transition-colors duration-300 relative',
+            {
+              'bg-yellow-500 border-yellow-500 text-white shadow-lg': isCompleted,
+              'bg-gray-700 border-gray-500 text-yellow-400 shadow-inner': isActive,
+              'bg-transparent border-gray-600 text-gray-500': !isCompleted && !isActive,
+            }
+          );
+  
+          return (
+            <React.Fragment key={step.id}>
+              <motion.div
+                onClick={() => isCompleted && onStepClick(stepNumber)}
+                className="flex flex-col items-center cursor-pointer"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={stepTransition(index)}
+                title={`Step ${stepNumber}: ${step.name}`}
+              >
+                <div
+                  className={stepClasses}
+                  aria-current={isActive ? 'step' : undefined}
+                  aria-label={`Step ${stepNumber}: ${step.name}`}
+                >
+                  {isCompleted ? <FaCheck size={24} /> : <span className="font-serif text-xl">{stepNumber}</span>}
+                </div>
+                <span className="mt-2 text-sm lg:text-base text-gray-300 font-semibold whitespace-nowrap">
+                  {step.name}
+                </span>
+              </motion.div>
+              {index < steps.length - 1 && (
+                <motion.div
+                  className={classNames('flex-1 h-1 transition-colors duration-300', {
+                    'bg-yellow-500': isCompleted,
+                    'bg-gray-600': !isCompleted,
+                  })}
+                  aria-hidden="true"
+                  variants={connectorVariants}
+                  initial="hidden"
+                  animate="visible"
+                  transition={stepTransition(index)}
+                />
+              )}
+            </React.Fragment>
+          );
+        })}
+      </div>
+    );
+  });
 
 /************************************************
  * 5) STEP 1: Member Details Form (Enhanced UI)
@@ -1387,100 +1401,7 @@ const TryoutWaiverForm = ({ formData, setFormData, next, back, handleSubmitFinal
               </h2>
 
               {/* Waiver Content */}
-              <div
-                id="waiver-container"
-                className="bg-gray-700 p-6 rounded-lg shadow-inner overflow-y-auto max-h-96 scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-700"
-              >
-                <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-red-500 mb-4">
-                  READ CAREFULLY - THIS AFFECTS YOUR LEGAL RIGHTS
-                </h3>
-                <p className="text-gray-300 mb-4">
-                  In exchange for participation in the activity of Martial Arts and Athletics organized by
-                  BIGMONKEYUSA COMPANY, of 110 S River Rd Des Plaines, IL 60016 and/or use of the
-                  property, facilities, and services of BIGMONKEYUSA COMPANY, I,{' '}
-                  <span className="font-bold text-white">{formData.student.parentFirstName || '_________________'}</span> of{' '}
-                  <span className="font-bold text-white">
-                    {formData.student.parentAddress || '_____________________________________________________(address)'}
-                  </span>
-                  , agree for myself and (if applicable) for the members of my family, to the following:
-                </p>
-                <ol className="list-decimal list-inside text-gray-300 space-y-4">
-                  <li>
-                    <span className="font-semibold">AGREEMENT TO FOLLOW DIRECTIONS.</span> I agree to observe and obey all posted rules and
-                    warnings, and further agree to follow any oral instructions or directions given by BIGMONKEYUSA 
-                    COMPANY, or the employees, representatives or agents of BIGMONKEYUSA COMPANY.
-                  </li>
-                  <li>
-                    <span className="font-semibold">ASSUMPTION OF THE RISKS AND RELEASE.</span> I recognize that there are certain inherent risks 
-                    associated with the above-described activity and I assume full responsibility for personal injury to myself 
-                    and (if applicable) my family members, and further release and discharge BIGMONKEYUSA COMPANY, 
-                    for injury, loss or damage arising out of my or my family's use of or presence upon the facilities of 
-                    BIGMONKEYUSA COMPANY, whether caused by the fault of myself, my family, BIGMONKEYUSA 
-                    COMPANY, or other third parties.
-                  </li>
-                  <li>
-                    <span className="font-semibold">INDEMNIFICATION.</span> I agree to indemnify and defend BIGMONKEYUSA COMPANY, against all 
-                    claims, causes of action, damages, judgments, costs or expenses, including attorney fees and other 
-                    litigation costs, which may in any way arise from my or my family's use of or presence upon the facilities 
-                    of BIGMONKEYUSA COMPANY.
-                  </li>
-                  <li>
-                    <span className="font-semibold">FEES.</span> I agree to pay for all damages to the facilities of BIGMONKEYUSA COMPANY, caused by any 
-                    negligent, reckless, or willful actions by me or my family.
-                  </li>
-                  <li>
-                    <span className="font-semibold">APPLICABLE LAW.</span> Any legal or equitable claim that may arise from participation in the above shall be 
-                    resolved under Illinois law.
-                  </li>
-                  <li>
-                    <span className="font-semibold">NO DURESS.</span> I agree and acknowledge that I am under no pressure or duress to sign this Agreement and that I 
-                    have been given a reasonable opportunity to review it before signing. I further agree and acknowledge that I am free 
-                    to have my own legal counsel review this Agreement if I so desire. I further agree and acknowledge that 
-                    BIGMONKEYUSA COMPANY, has offered to refund any fees I have paid to use its facilities if I choose not to 
-                    sign this Agreement.
-                  </li>
-                  <li>
-                    <span className="font-semibold">ARM'S LENGTH AGREEMENT.</span> This Agreement and each of its terms are the product of an arm's length 
-                    negotiation between the Parties. In the event any ambiguity is found to exist in the interpretation of this Agreement, 
-                    or any of its provisions, the Parties, and each of them, explicitly reject the application of any legal or equitable rule 
-                    of interpretation which would lead to a construction either "for" or "against" a particular party based upon their 
-                    status as the drafter of a specific term, language, or provision giving rise to such ambiguity.
-                  </li>
-                  <li>
-                    <span className="font-semibold">ENFORCEABILITY.</span> The invalidity or unenforceability of any provision of this Agreement, whether standing 
-                    alone or as applied to a particular occurrence or circumstance, shall not affect the validity or enforceability of any 
-                    other provision of this Agreement or of any other applications of such provision, as the case may be, and such 
-                    invalid or unenforceable provision shall be deemed not to be a part of this Agreement.
-                  </li>
-                  <li>
-                    <span className="font-semibold">DISPUTE RESOLUTION.</span> The parties will attempt to resolve any dispute arising out of or relating to this 
-                    Agreement through friendly negotiations amongst the parties. If the matter is not resolved by negotiation, the parties 
-                    will resolve the dispute using the below Alternative Dispute Resolution (ADR) procedure. Any controversies or 
-                    disputes arising out of or relating to this Agreement will be submitted to mediation in accordance with any statutory 
-                    rules of mediation. If mediation is not successful in resolving the entire matter or is unavailable, any outstanding 
-                    issues will be submitted to final and binding arbitration under the rules of the American Arbitration Association. 
-                    The arbitrator’s award will be final, and judgment may be entered upon it by any court having proper jurisdiction.
-                  </li>
-                  <li>
-                    <span className="font-semibold">MEDICAL WAIVER.</span> Participating students are to obtain a physical examination from their physician prior to 
-                    participating in martial arts. In recognition of the possible dangers connected with any physical activity, student 
-                    hereby knowingly and voluntarily waives any right of cause of action of any kind whatsoever arising as the result of 
-                    such activity from which any liability may or could accrue to Martial Arts School, its officers, agents, instructors, 
-                    individual members, or participants. This waiver applies to all losses, damages, injuries, and other claims arising 
-                    from or relating to my participation in martial arts classes, instruction, instructional periods and/or contests.
-                  </li>
-                  <li>
-                    <span className="font-semibold">PHOTO RELEASE.</span> I/we give our permission for my child to have his or her photograph taken for publicity 
-                    purposes by named facility, school, its officers, employees or instructors.
-                  </li>
-                  <li>
-                    <span className="font-semibold">
-                      I HAVE READ THIS DOCUMENT AND UNDERSTAND IT. I FURTHER UNDERSTAND THAT BY SIGNING 
-                      THIS RELEASE, I VOLUNTARILY SURRENDER CERTAIN LEGAL RIGHTS.
-                    </span>
-                  </li>
-                </ol>
-              </div>
+              
 
               {/* Download PDF Button */}
               <div className="flex justify-end mt-4">
@@ -1672,91 +1593,113 @@ const TryoutWaiverForm = ({ formData, setFormData, next, back, handleSubmitFinal
  * 8) Confirmation Component
  *********************************************/
 const Confirmation = React.memo(({ resetForm }) => (
-  <motion.div
-    className="bg-gradient-to-tr from-green-700 to-teal-800 p-8 lg:p-12 rounded-xl shadow-2xl text-center max-w-7xl mx-auto w-full"
-    initial={{ opacity: 0, scale: 0.95 }}
-    animate={{ opacity: 1, scale: 1 }}
-    exit={{ opacity: 0, scale: 0.95 }}
-    transition={{ duration: 0.5 }}
-  >
     <motion.div
-      className="text-green-500 text-5xl sm:text-6xl lg:text-7xl mx-auto mb-6"
-      initial={{ scale: 0 }}
-      animate={{ scale: 1 }}
+      className="bg-gradient-to-tr from-green-700 to-teal-800 p-8 lg:p-12 rounded-xl shadow-2xl text-center max-w-7xl mx-auto w-full"
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.5 }}
     >
-      <FaCheckCircle />
+      <motion.div
+        className="text-green-500 text-5xl sm:text-6xl lg:text-7xl mx-auto mb-6"
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <FaCheckCircle />
+      </motion.div>
+      <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white">Thank You!</h2>
+      <motion.p
+        className="text-gray-300 mt-4 text-base sm:text-lg lg:text-xl"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.5, duration: 0.5 }}
+      >
+        Your registration has been successfully submitted. We look forward to seeing you at the tryout!
+      </motion.p>
+      <motion.button
+        type="button"
+        onClick={resetForm}
+        className="mt-6 flex items-center space-x-2 px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-md shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        aria-label="Start Over"
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+      >
+        <FaRunning />
+        <span>Start Over</span>
+      </motion.button>
     </motion.div>
-    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white">Thank You!</h2>
-    <motion.p
-      className="text-gray-300 mt-4 text-base sm:text-lg lg:text-xl"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ delay: 0.5, duration: 0.5 }}
-    >
-      Your registration has been successfully submitted. We look forward to seeing you at the tryout!
-    </motion.p>
-    <motion.button
-      type="button"
-      onClick={resetForm}
-      className="mt-6 flex items-center space-x-2 px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-md shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-      aria-label="Start Over"
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-    >
-      <FaRunning />
-      <span>Start Over</span>
-    </motion.button>
-  </motion.div>
-));
-
-/************************************************
- * 9) Main MembershipForm Export
- ************************************************/
-export default function MembershipForm() {
-  const [formData, setFormData] = useState(initialFormValues);
-  const [currentStep, setCurrentStep] = useState(1);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-
-  const steps = [
-    { id: 1, name: 'Member Details' },
-    { id: 2, name: 'Tryout Selection' },
-    { id: 3, name: 'Waiver Agreement' },
-  ];
-
-  const next = useCallback(() => {
-    setCurrentStep((prev) => {
-      const newStep = prev + 1;
-      if (newStep > steps.length) {
-        console.warn(`Attempted to exceed the maximum step: ${steps.length}`);
-        return prev;
-      }
-      return newStep;
-    });
-  }, [steps.length]);
-
-  const back = useCallback(() => {
-    setCurrentStep((prev) => {
-      const newStep = prev - 1;
-      if (newStep < 1) {
-        console.warn('Attempted to go below step 1');
-        return prev;
-      }
-      return newStep;
-    });
-  }, []);
-
-  // Handle final submission to the server
-  const handleSubmitFinal = useCallback(async (finalData) => {
-    try {
-      const response = await fetch('/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(finalData),
+  ));
+  
+  /************************************************
+   * 9) Main MembershipForm Export
+   ************************************************/
+  export default function MembershipForm() {
+    const [formData, setFormData] = useState(initialFormValues);
+    const [currentStep, setCurrentStep] = useState(1);
+    const [isSubmitted, setIsSubmitted] = useState(false);
+  
+    const steps = [
+      { id: 1, name: 'Member Details' },
+      { id: 2, name: 'Tryout Selection' },
+      { id: 3, name: 'Waiver Agreement' },
+    ];
+  
+    const next = useCallback(() => {
+      setCurrentStep((prev) => {
+        const newStep = prev + 1;
+        if (newStep > steps.length) {
+          console.warn(`Attempted to exceed the maximum step: ${steps.length}`);
+          return prev;
+        }
+        return newStep;
       });
-
-      if (response.ok) {
-        toast.success('Registration successful!', {
+    }, [steps.length]);
+  
+    const back = useCallback(() => {
+      setCurrentStep((prev) => {
+        const newStep = prev - 1;
+        if (newStep < 1) {
+          console.warn('Attempted to go below step 1');
+          return prev;
+        }
+        return newStep;
+      });
+    }, []);
+  
+    // Handle final submission to the server
+    const handleSubmitFinal = useCallback(async (finalData) => {
+      try {
+        const response = await fetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(finalData),
+        });
+  
+        if (response.ok) {
+          toast.success('Registration successful!', {
+            position: 'top-right',
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+          });
+          setIsSubmitted(true);
+          setFormData(initialFormValues);
+        } else {
+          const errorData = await response.json();
+          toast.error(errorData.message || 'Server Error. Please try again.', {
+            position: 'top-right',
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+          });
+        }
+      } catch (error) {
+        toast.error('Network Error. Please check your connection.', {
           position: 'top-right',
           autoClose: 5000,
           hideProgressBar: false,
@@ -1764,129 +1707,113 @@ export default function MembershipForm() {
           pauseOnHover: true,
           draggable: true,
         });
-        setIsSubmitted(true);
-        setFormData(initialFormValues);
-      } else {
-        const errorData = await response.json();
-        toast.error(errorData.message || 'Server Error. Please try again.', {
-          position: 'top-right',
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        });
+        console.error('Error submitting form:', error);
       }
-    } catch (error) {
-      toast.error('Network Error. Please check your connection.', {
-        position: 'top-right',
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
-      console.error('Error submitting form:', error);
-    }
-  }, []);
-
-  // Reset form to initial state
-  const resetForm = useCallback(() => {
-    setIsSubmitted(false);
-    setCurrentStep(1);
-    setFormData(initialFormValues);
-  }, []);
-
-  return (
-    <div className="bg-gray-900 min-h-screen flex flex-col items-center justify-start p-4">
-      <div className="w-full max-w-7xl flex flex-col items-center">
-        {/* Title */}
-        <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-3 justify-center mb-10">
-          <FaRunning className="text-indigo-500 text-5xl sm:text-6xl lg:text-7xl" />
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white">
-            Tryout Registration
-          </h1>
+    }, []);
+  
+    // Reset form to initial state
+    const resetForm = useCallback(() => {
+      setIsSubmitted(false);
+      setCurrentStep(1);
+      setFormData(initialFormValues);
+    }, []);
+  
+    return (
+      <div className="bg-gray-900 min-h-screen flex flex-col items-center justify-start p-4">
+        <div className="w-full max-w-7xl flex flex-col items-center">
+          {/* Title */}
+          <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-3 justify-center mb-10">
+            <FaRunning className="text-indigo-500 text-5xl sm:text-6xl lg:text-7xl" />
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white">
+              Tryout Registration
+            </h1>
+          </div>
+  
+          {/* Improved Progress Indicator */}
+          {!isSubmitted && (
+            <ProgressIndicator 
+              steps={steps} 
+              currentStep={currentStep} 
+              onStepClick={(step) => { if(step < currentStep) setCurrentStep(step) }} 
+            />
+          )}
+  
+          <AnimatePresence mode="wait">
+            {/* STEP 1 */}
+            {!isSubmitted && currentStep === 1 && (
+              <motion.div
+                key="step1"
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 50 }}
+                transition={{ duration: 0.3 }}
+                className="w-full"
+              >
+                <MemberDetailsForm
+                  formData={formData}
+                  setFormData={setFormData}
+                  next={next}
+                />
+              </motion.div>
+            )}
+  
+            {/* STEP 2 */}
+            {!isSubmitted && currentStep === 2 && (
+              <motion.div
+                key="step2"
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -50 }}
+                transition={{ duration: 0.3 }}
+                className="w-full"
+              >
+                <TryoutSelectionForm
+                  formData={formData}
+                  setFormData={setFormData}
+                  next={next}
+                  back={back}
+                />
+              </motion.div>
+            )}
+  
+            {/* STEP 3 */}
+            {!isSubmitted && currentStep === 3 && (
+              <motion.div
+                key="step3"
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 50 }}
+                transition={{ duration: 0.3 }}
+                className="w-full"
+              >
+                <TryoutWaiverForm
+                  formData={formData}
+                  setFormData={setFormData}
+                  next={next}
+                  back={back}
+                  handleSubmitFinal={handleSubmitFinal}
+                />
+              </motion.div>
+            )}
+  
+            {/* Confirmation */}
+            {isSubmitted && (
+              <motion.div
+                key="confirmation"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.5 }}
+                className="w-full"
+              >
+                <Confirmation resetForm={resetForm} />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-
-        {/* Progress Indicator */}
-        {!isSubmitted && <ProgressIndicator steps={steps} currentStep={currentStep} />}
-
-        <AnimatePresence mode="wait">
-          {/* STEP 1 */}
-          {!isSubmitted && currentStep === 1 && (
-            <motion.div
-              key="step1"
-              initial={{ opacity: 0, x: -50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 50 }}
-              transition={{ duration: 0.3 }}
-              className="w-full"
-            >
-              <MemberDetailsForm
-                formData={formData}
-                setFormData={setFormData}
-                next={next}
-              />
-            </motion.div>
-          )}
-
-          {/* STEP 2 */}
-          {!isSubmitted && currentStep === 2 && (
-            <motion.div
-              key="step2"
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -50 }}
-              transition={{ duration: 0.3 }}
-              className="w-full"
-            >
-              <TryoutSelectionForm
-                formData={formData}
-                setFormData={setFormData}
-                next={next}
-                back={back}
-              />
-            </motion.div>
-          )}
-
-          {/* STEP 3 */}
-          {!isSubmitted && currentStep === 3 && (
-            <motion.div
-              key="step3"
-              initial={{ opacity: 0, x: -50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 50 }}
-              transition={{ duration: 0.3 }}
-              className="w-full"
-            >
-              <TryoutWaiverForm
-                formData={formData}
-                setFormData={setFormData}
-                next={next}
-                back={back}
-                handleSubmitFinal={handleSubmitFinal} // Pass the final submit handler
-              />
-            </motion.div>
-          )}
-
-          {/* Confirmation */}
-          {isSubmitted && (
-            <motion.div
-              key="confirmation"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.5 }}
-              className="w-full"
-            >
-              <Confirmation resetForm={resetForm} />
-            </motion.div>
-          )}
-        </AnimatePresence>
+  
+        {/* Toast Notifications */}
+        <ToastContainer position="top-right" autoClose={5000} hideProgressBar />
       </div>
-
-      {/* Toast Notifications */}
-      <ToastContainer position="top-right" autoClose={5000} hideProgressBar />
-    </div>
-  );
-}
+    );
+  }
